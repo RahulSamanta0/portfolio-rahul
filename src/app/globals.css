@@ -306,8 +306,11 @@ input {
 }
 
 .nav__close,
-.nav__toggle {
-  display: none;
+.nav__toggle,
+.nav__menu-header,
+.nav__menu-socials,
+.nav__link-num {
+  display: none !important;
 }
 
 .active-link {
@@ -2163,6 +2166,7 @@ input {
   }
 
   .nav__menu-header {
+    display: block !important;
     margin-bottom: 3.5rem;
     margin-left: 1rem;
   }
@@ -2195,6 +2199,7 @@ input {
   }
 
   .nav__link-num {
+    display: inline-block !important;
     font-family: var(--mono-font);
     font-size: 0.75rem;
     color: #ea580c;
@@ -2217,7 +2222,7 @@ input {
 
   .nav__menu-socials {
     margin-top: auto;
-    display: flex;
+    display: flex !important;
     gap: 1.25rem;
     align-items: center;
     padding-top: 2rem;
