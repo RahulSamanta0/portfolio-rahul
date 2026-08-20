@@ -1,19 +1,12 @@
+import CharacterSequence from "@/components/character/CharacterSequence";
+
 export default function Home() {
   return (
     <section className="home" id="home">
       <div className="home__container container grid">
-        <img
-          src="/assets/img/Profile.png"
-          alt="Rahul Samanta"
-          className="home__img"
-        />
         <div className="home__data">
           <h1 className="home__name">Rahul Samanta_</h1>
           <p className="home__work">AI / ML & Full Stack Developer</p>
-
-          <p className="home__details text-lg">
-            I am a Software Engineer specializing in <strong>AI, Machine Learning, AI Agents, Backend Engineering, and Cloud Systems</strong>. I build intelligent applications using <strong>LLMs, RAG, LangChain, and Agentic AI</strong>, along with secure and scalable REST APIs and microservices. I have strong experience with <strong>SQL/NoSQL databases, database optimization, Docker, Kubernetes, CI/CD, and cloud deployment</strong>, focusing on building reliable, scalable, and production-ready systems.
-          </p>
 
           <div className="home__socials">
             <a
@@ -55,6 +48,7 @@ export default function Home() {
             </a>
           </div>
         </div>
+        <CharacterSequence />
       </div>
     </section>
   );

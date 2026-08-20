@@ -62,13 +62,8 @@ export default function DotBackground() {
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Find top position of section below hero (#home)
-      const homeSection = document.getElementById("home");
+      // Start drawing dot background from the top of page (including hero section)
       let startY = 0;
-      if (homeSection) {
-        const rect = homeSection.getBoundingClientRect();
-        startY = Math.max(0, rect.bottom);
-      }
 
       // Draw dark grey-black combined gradient background across the whole page
       const bgGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);

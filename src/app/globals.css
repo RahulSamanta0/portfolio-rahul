@@ -346,10 +346,13 @@ input {
 
 /*=============== Home ===============*/
 .home {
-  background: transparent;
+  background: #111111;
   padding-top: 5.5rem;
-  margin-bottom: 2.5rem;
+  padding-bottom: 3rem;
+  margin-bottom: 0;
   position: relative;
+  display: flex;
+  align-items: center;
 }
 
 .home::before {
@@ -357,13 +360,15 @@ input {
 }
 
 .home__container {
-  grid-template-columns: 4fr 8fr;
-  column-gap: 1.875rem;
+  grid-template-columns: 7fr 5fr;
+  column-gap: 2.5rem;
+  align-items: center;
+  width: 100%;
 }
 
-.home__img,
 .home__data {
   z-index: 10;
+  max-width: 800px;
 }
 
 .home__img {
@@ -459,22 +464,128 @@ input {
   color: #f8f5e6;
 }
 
+/* Character Rotation Animation – 360 Three.js viewer */
+.character-viewer-card {
+  transition: box-shadow 0.4s ease, border-color 0.4s ease, transform 0.3s ease;
+}
+
+.character-viewer-card:hover {
+  border-color: rgba(234, 88, 12, 0.4) !important;
+  box-shadow: 0 25px 60px -10px rgba(0, 0, 0, 0.8), 0 0 35px -5px rgba(234, 88, 12, 0.25) !important;
+}
+
+.character-viewer-card:active {
+  cursor: grabbing !important;
+}
+
+/* Cyber Corner Accents */
+.cyber-corner {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-color: rgba(234, 88, 12, 0.6);
+  pointer-events: none;
+  z-index: 12;
+  transition: all 0.3s ease;
+}
+
+.character-viewer-card:hover .cyber-corner {
+  border-color: #f97316;
+  filter: drop-shadow(0 0 6px rgba(234, 88, 12, 0.8));
+}
+
+.cyber-corner--tl {
+  top: 8px;
+  left: 8px;
+  border-top: 2px solid;
+  border-left: 2px solid;
+}
+
+.cyber-corner--tr {
+  top: 8px;
+  right: 8px;
+  border-top: 2px solid;
+  border-right: 2px solid;
+}
+
+.cyber-corner--bl {
+  bottom: 8px;
+  left: 8px;
+  border-bottom: 2px solid;
+  border-left: 2px solid;
+}
+
+.cyber-corner--br {
+  bottom: 8px;
+  right: 8px;
+  border-bottom: 2px solid;
+  border-right: 2px solid;
+}
+
+/* Pulse animation for 360 live badge */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.85);
+  }
+}
+
+/* Interaction hint fade and floating animation */
+.interaction-hint {
+  animation: floatHint 3s ease-in-out infinite;
+}
+
+.interaction-hint--hidden {
+  opacity: 0 !important;
+  transform: translate(-50%, 12px) !important;
+  pointer-events: none !important;
+}
+
+@keyframes floatHint {
+  0%, 100% {
+    transform: translate(-50%, 0);
+  }
+  50% {
+    transform: translate(-50%, -4px);
+  }
+}
+
+.home__animation {
+  position: relative;
+  width: 100%;
+  max-width: 460px;
+  aspect-ratio: 1 / 1;
+  margin: 0 auto;
+  border: none;
+  background: transparent;
+  cursor: grab;
+  z-index: 10;
+  user-select: none;
+}
+
+.home__animation:active {
+  cursor: grabbing;
+}
+
+.home__animation canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
 @media (max-width: 768px) {
   .home__container {
     display: flex;
     flex-direction: column;
-    text-align: center;
-  }
-
-  .home__img {
-    width: 70%;
-    height: auto;
-    margin-bottom: 1.5rem;
-    transform: none;
+    text-align: left;
   }
 
   .home__socials {
-    justify-content: center;
+    justify-content: flex-start;
   }
 
   .home__name {
@@ -484,6 +595,12 @@ input {
   .download-btn {
     margin-top: 1rem;
     justify-content: center;
+  }
+
+  .character-viewer-card,
+  .home__animation {
+    margin-top: 2rem !important;
+    max-width: 320px !important;
   }
 }
 
