@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import SmoothScrollProvider from "@/components/SmoothScrollProvider";
 
 export const metadata: Metadata = {
   title: "Rahul Samanta || Portfolio",
@@ -38,7 +39,9 @@ export default function RootLayout({
         {/* VanillaTilt */}
         <script src="/vanilla-tilt.js" defer></script>
       </head>
-      <body>{children}</body>
+      <body>
+        <SmoothScrollProvider>{children}</SmoothScrollProvider>
+      </body>
     </html>
   );
 }

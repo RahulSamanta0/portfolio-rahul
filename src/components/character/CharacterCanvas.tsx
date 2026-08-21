@@ -5,7 +5,8 @@ import {
   TOTAL_FRAMES,
   IMAGE_WIDTH,
   IMAGE_HEIGHT,
-  LERP_FACTOR,
+  SPRING_STIFFNESS,
+  SPRING_DAMPING,
 } from "./character.config";
 
 interface CharacterCanvasProps {
@@ -38,6 +39,7 @@ export const CharacterCanvas: React.FC<CharacterCanvasProps> = ({
     if (!ctx) return;
 
     let animationId: number;
+    let springVelocity = 0; // tracks momentum between frames
 
     const updateSize = () => {
       if (!container || !canvas) return;
@@ -76,12 +78,13 @@ export const CharacterCanvas: React.FC<CharacterCanvasProps> = ({
         return;
       }
 
-      // Smooth Lerp Interpolation
+      // Spring-physics interpolation (velocity-based, momentum-aware)
       const target = Math.max(0, Math.min(1, targetProgressRef.current));
       const current = currentProgressRef.current;
       const diff = target - current;
-
-      currentProgressRef.current = Math.max(0, Math.min(1, current + diff * LERP_FACTOR));
+      // Accumulate velocity toward target, then damp it
+      springVelocity = springVelocity * SPRING_DAMPING + diff * SPRING_STIFFNESS;
+      currentProgressRef.current = Math.max(0, Math.min(1, current + springVelocity));
 
       // Map progress 0.0 -> Frame 189 (0° Front view) down to progress 1.0 -> Frame 0 (180° Back view)
       const frameIndex = Math.max(

@@ -22,10 +22,22 @@ export const IMAGE_HEIGHT = 1080;
 export const ASPECT_RATIO = IMAGE_WIDTH / IMAGE_HEIGHT;
 
 /**
- * Interpolation damping factor for requestAnimationFrame rendering.
- * Higher = faster snap; Lower = smoother cinematic glide.
+ * Spring-physics constants for the scroll interpolation.
+ *
+ * SPRING_STIFFNESS – how hard the spring pulls toward the target (0–1).
+ *   Higher = snappier.  Recommended range: 0.06 – 0.18
+ *
+ * SPRING_DAMPING – how quickly the velocity bleeds off (0–1).
+ *   Higher = less overshoot / bounciness.  Recommended range: 0.70 – 0.90
+ *
+ * Together they produce a momentum-style ease-out that feels far more
+ * organic than a simple lerp, without any external library.
  */
-export const LERP_FACTOR = 0.12;
+export const SPRING_STIFFNESS = 0.10; // pull strength toward target
+export const SPRING_DAMPING   = 0.80; // velocity decay per frame
+
+/** @deprecated use SPRING_STIFFNESS / SPRING_DAMPING instead */
+export const LERP_FACTOR = SPRING_STIFFNESS;
 
 /**
  * Direct drag / scroll sensitivity factors
