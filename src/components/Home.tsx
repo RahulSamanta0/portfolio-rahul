@@ -1,6 +1,55 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
 import CharacterSequence from "@/components/character/CharacterSequence";
 
 export default function Home() {
+  const [displayedBio, setDisplayedBio] = useState("");
+  const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(null);
+
+  const fullName = "Rahul Samanta";
+  const fullBio =
+    "Hello, I’m Rahul — I engineer intelligent solutions for complex problems, blending AI, software engineering, and cloud technologies to create systems that are built to think, adapt, and scale.";
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setDisplayedBio(fullBio);
+      return;
+    }
+
+    let bioIdx = 0;
+    let timer: NodeJS.Timeout;
+
+    // Type the bio with glowing neon dot cursor
+    const typeBio = () => {
+      if (bioIdx < fullBio.length) {
+        bioIdx++;
+        setDisplayedBio(fullBio.slice(0, bioIdx));
+        const jitter = (Math.random() - 0.5) * 15;
+        timer = setTimeout(typeBio, Math.max(15, 24 + jitter));
+      }
+    };
+
+    const startTimer = setTimeout(typeBio, 350);
+
+    return () => {
+      clearTimeout(startTimer);
+      clearTimeout(timer);
+    };
+  }, []);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLHeadingElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setMousePos({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    });
+  };
+
+  const handleMouseLeave = () => {
+    setMousePos(null);
+  };
+
   return (
     <div className="hero-scroll-container" id="home">
       <section className="hero-sticky">
@@ -16,12 +65,32 @@ export default function Home() {
         {/* ── Foreground Content ──────────────────────────────────────── */}
         <div className="hero-content">
           <div className="hero-copy">
-            <h1 className="hero-name">
-              Rahul Samanta<span className="hero-cursor">_</span>
+            <h1
+              className={`hero-name ${mousePos ? "hero-name--spotlight" : ""}`}
+              aria-label={fullName}
+              onMouseMove={handleMouseMove}
+              onMouseLeave={handleMouseLeave}
+              style={
+                mousePos
+                  ? ({
+                      "--mouse-x": `${mousePos.x}px`,
+                      "--mouse-y": `${mousePos.y}px`,
+                    } as React.CSSProperties)
+                  : undefined
+              }
+            >
+              <span className="hero-name-text">Rahul Samanta</span>
+              <span className="hero-cursor" aria-hidden="true">_</span>
             </h1>
+
             <p className="hero-work">AI / ML &amp; Full Stack Developer</p>
 
-            <div className="hero-actions">
+            <p className="hero-bio" aria-label={fullBio}>
+              <span>{displayedBio}</span>
+              <span className="hero-bio-dot" aria-hidden="true" />
+            </p>
+
+            <div className="hero-actions hero-actions-mobile">
               <a
                 href="https://github.com/RahulSamanta0"
                 target="_blank"

@@ -166,9 +166,10 @@ function drawCharacter(
     offsetX = viewportWidth * 0.08;
     offsetY = viewportHeight * 0.04;
   } else {
-    scale = Math.max((viewportHeight * 0.75) / IMAGE_HEIGHT, (viewportWidth * 0.95) / IMAGE_WIDTH);
+    // Mobile: fill the full height, avatar large and centered
+    scale = Math.max((viewportHeight * 0.95) / IMAGE_HEIGHT, (viewportWidth * 1.05) / IMAGE_WIDTH);
     offsetX = 0;
-    offsetY = viewportHeight * 0.10;
+    offsetY = viewportHeight * 0.06;
   }
 
   const drawWidth = IMAGE_WIDTH * scale;
