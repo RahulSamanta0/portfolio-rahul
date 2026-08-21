@@ -1,20 +1,17 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
-import * as THREE from "three";
 import {
   TOTAL_FRAMES,
   IMAGE_WIDTH,
   IMAGE_HEIGHT,
   LERP_FACTOR,
-  DPR_MAX_DESKTOP,
-  DPR_MAX_MOBILE,
 } from "./character.config";
 
 interface CharacterCanvasProps {
   targetProgressRef: React.MutableRefObject<number>;
   currentProgressRef: React.MutableRefObject<number>;
-  getTexture: (frame: number) => THREE.Texture | null;
+  getImage: (frame: number) => HTMLImageElement | null;
   isReady: boolean;
   isReducedMotion?: boolean;
   onHUDUpdate?: (frame: number, degrees: number) => void;
@@ -23,167 +20,116 @@ interface CharacterCanvasProps {
 export const CharacterCanvas: React.FC<CharacterCanvasProps> = ({
   targetProgressRef,
   currentProgressRef,
-  getTexture,
+  getImage,
   isReady,
   isReducedMotion = false,
   onHUDUpdate,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const previousFrameRef = useRef<number>(-1);
+  const lastDrawnImgRef = useRef<HTMLImageElement | null>(null);
 
   useEffect(() => {
     const container = containerRef.current;
     const canvas = canvasRef.current;
     if (!container || !canvas) return;
 
-    // ── 1. Three.js Scene Setup ──────────────────────────────────────────
-    const scene = new THREE.Scene();
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
 
-    // Responsive Orthographic Camera
-    const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 100);
-    camera.position.z = 10;
+    let animationId: number;
 
-    // WebGL Renderer with Alpha transparency & high performance
-    const isMobile = window.innerWidth <= 768;
-    const maxDpr = isMobile ? DPR_MAX_MOBILE : DPR_MAX_DESKTOP;
-    const dpr = Math.min(window.devicePixelRatio || 1, maxDpr);
-
-    const renderer = new THREE.WebGLRenderer({
-      canvas,
-      alpha: true,
-      antialias: true,
-      powerPreference: "high-performance",
-      preserveDrawingBuffer: false,
-    });
-    renderer.setPixelRatio(dpr);
-    renderer.setClearColor(0x000000, 0);
-
-    // Character Plane Mesh (unit geometry scaled to match aspect ratio)
-    const geometry = new THREE.PlaneGeometry(1, 1);
-    const material = new THREE.MeshBasicMaterial({
-      transparent: true,
-      toneMapped: false,
-    });
-    const plane = new THREE.Mesh(geometry, material);
-    scene.add(plane);
-
-    // ── 2. Responsive Sizing (Contain Aspect Ratio) ──────────────────────
     const updateSize = () => {
-      if (!container || !renderer) return;
-      const width = container.clientWidth || 300;
-      const height = container.clientHeight || 300;
+      if (!container || !canvas) return;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const width = container.clientWidth || window.innerWidth;
+      const height = container.clientHeight || window.innerHeight;
 
-      renderer.setSize(width, height, false);
-
-      // Orthographic camera coordinates centered at (0, 0)
-      camera.left = -width / 2;
-      camera.right = width / 2;
-      camera.top = height / 2;
-      camera.bottom = -height / 2;
-      camera.updateProjectionMatrix();
-
-      // Fit character image with object-fit: contain
-      const scale = Math.min(width / IMAGE_WIDTH, height / IMAGE_HEIGHT);
-      plane.scale.set(IMAGE_WIDTH * scale, IMAGE_HEIGHT * scale, 1);
-      plane.position.set(0, 0, 0);
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
 
     updateSize();
+
     const resizeObserver = new ResizeObserver(updateSize);
     resizeObserver.observe(container);
-
-    // ── 3. Optimized Render Loop (Zero React Rerenders) ─────────────────
-    let animationId: number;
 
     const renderLoop = () => {
       animationId = requestAnimationFrame(renderLoop);
 
-      // If reduced motion is active, freeze at default front angle (frame 0)
+      const width = container.clientWidth || window.innerWidth;
+      const height = container.clientHeight || window.innerHeight;
+
+      // Handle reduced motion
       if (isReducedMotion) {
-        if (previousFrameRef.current !== 0) {
-          const texture = getTexture(0);
-          if (texture) {
-            material.map = texture;
-            material.needsUpdate = true;
-            previousFrameRef.current = 0;
-            onHUDUpdate?.(0, 0);
-          }
+        const img = getImage(TOTAL_FRAMES - 1) || getImage(0) || lastDrawnImgRef.current;
+        if (img && img.complete && img.naturalWidth > 0) {
+          lastDrawnImgRef.current = img;
+          ctx.fillStyle = "#000000";
+          ctx.fillRect(0, 0, width, height);
+          drawCharacter(ctx, img, width, height);
+          onHUDUpdate?.(TOTAL_FRAMES - 1, 0);
         }
-        renderer.render(scene, camera);
         return;
       }
 
       // Smooth Lerp Interpolation
-      const target = targetProgressRef.current;
+      const target = Math.max(0, Math.min(1, targetProgressRef.current));
       const current = currentProgressRef.current;
-      
-      // Shortest angle / wrap distance handling for smooth rotation
-      let diff = target - current;
-      // When wrapping across 0 <-> 1 boundaries
-      if (diff > 0.5) diff -= 1.0;
-      if (diff < -0.5) diff += 1.0;
+      const diff = target - current;
 
-      currentProgressRef.current = (current + diff * LERP_FACTOR + 1.0) % 1.0;
+      currentProgressRef.current = Math.max(0, Math.min(1, current + diff * LERP_FACTOR));
 
-      // Calculate corresponding frame index (0 to 239)
+      // Map progress 0.0 -> Frame 189 (0° Front view) down to progress 1.0 -> Frame 0 (180° Back view)
       const frameIndex = Math.max(
         0,
-        Math.min(TOTAL_FRAMES - 1, Math.round(currentProgressRef.current * (TOTAL_FRAMES - 1)))
+        Math.min(TOTAL_FRAMES - 1, Math.round((1 - currentProgressRef.current) * (TOTAL_FRAMES - 1)))
       );
 
-      // Calculate degrees (0° to 360°)
-      const degrees = Math.round(currentProgressRef.current * 360) % 360;
+      const degrees = Math.round(currentProgressRef.current * 180);
 
-      // Update Three.js texture only when the frame actually changes
-      if (frameIndex !== previousFrameRef.current) {
-        const texture = getTexture(frameIndex);
-        if (texture) {
-          material.map = texture;
-          material.needsUpdate = true;
-          previousFrameRef.current = frameIndex;
-        }
+      let img = getImage(frameIndex);
+      if (!img || !img.complete || img.naturalWidth === 0) {
+        img = lastDrawnImgRef.current;
       }
 
-      // Direct lightweight HUD update
-      onHUDUpdate?.(frameIndex, degrees);
+      if (img && img.complete && img.naturalWidth > 0) {
+        lastDrawnImgRef.current = img;
+        ctx.fillStyle = "#000000";
+        ctx.fillRect(0, 0, width, height);
+        drawCharacter(ctx, img, width, height);
+      }
 
-      // Render Three.js frame
-      renderer.render(scene, camera);
+      onHUDUpdate?.(frameIndex, degrees);
     };
 
     renderLoop();
 
-    // ── 4. Lifecycle Cleanup ────────────────────────────────────────────
     return () => {
       cancelAnimationFrame(animationId);
       resizeObserver.disconnect();
-
-      // Dispose Three.js objects
-      geometry.dispose();
-      material.dispose();
-      renderer.dispose();
-      scene.clear();
     };
-  }, [getTexture, isReducedMotion, onHUDUpdate, targetProgressRef, currentProgressRef]);
+  }, [getImage, isReducedMotion, onHUDUpdate, targetProgressRef, currentProgressRef]);
 
   return (
     <div
       ref={containerRef}
       className="character-canvas-wrapper"
       style={{
-        position: "relative",
+        position: "absolute",
+        inset: 0,
         width: "100%",
         height: "100%",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
         overflow: "hidden",
+        backgroundColor: "#000000",
       }}
     >
       <canvas
         ref={canvasRef}
-        aria-label="Interactive 360 degree character view of Rahul Samanta"
+        aria-label="Interactive character animation view of Rahul Samanta"
         role="img"
         style={{
           display: "block",
@@ -195,3 +141,41 @@ export const CharacterCanvas: React.FC<CharacterCanvasProps> = ({
     </div>
   );
 };
+
+function drawCharacter(
+  ctx: CanvasRenderingContext2D,
+  img: HTMLImageElement,
+  viewportWidth: number,
+  viewportHeight: number
+) {
+  const isDesktop = viewportWidth >= 992;
+  const isTablet = viewportWidth >= 640 && viewportWidth < 992;
+
+  let scale: number;
+  let offsetX = 0;
+  let offsetY = 0;
+
+  if (isDesktop) {
+    const scaleH = (viewportHeight * 1.05) / IMAGE_HEIGHT;
+    const scaleW = (viewportWidth * 0.75) / IMAGE_WIDTH;
+    scale = Math.max(scaleH, scaleW);
+    offsetX = viewportWidth * 0.16;
+    offsetY = viewportHeight * 0.02;
+  } else if (isTablet) {
+    scale = Math.max((viewportHeight * 0.95) / IMAGE_HEIGHT, (viewportWidth * 0.85) / IMAGE_WIDTH);
+    offsetX = viewportWidth * 0.08;
+    offsetY = viewportHeight * 0.04;
+  } else {
+    scale = Math.max((viewportHeight * 0.75) / IMAGE_HEIGHT, (viewportWidth * 0.95) / IMAGE_WIDTH);
+    offsetX = 0;
+    offsetY = viewportHeight * 0.10;
+  }
+
+  const drawWidth = IMAGE_WIDTH * scale;
+  const drawHeight = IMAGE_HEIGHT * scale;
+
+  const x = (viewportWidth - drawWidth) / 2 + offsetX;
+  const y = (viewportHeight - drawHeight) / 2 + offsetY;
+
+  ctx.drawImage(img, x, y, drawWidth, drawHeight);
+}

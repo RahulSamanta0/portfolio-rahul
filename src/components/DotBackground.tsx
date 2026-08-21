@@ -62,28 +62,25 @@ export default function DotBackground() {
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Start drawing dot background from the top of page (including hero section)
-      let startY = 0;
+      // Draw interactive dots across the full page height
+      const startY = 0;
 
-      // Draw dark grey-black combined gradient background across the whole page
+      // Full-page dark gradient background
       const bgGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-      bgGrad.addColorStop(0, "#0b0f19");   // Deep dark slate-grey
-      bgGrad.addColorStop(0.5, "#080c14"); // Dark charcoal-grey
-      bgGrad.addColorStop(1, "#030406");   // Pitch black
+      bgGrad.addColorStop(0, "rgba(5, 10, 20, 0.4)");
+      bgGrad.addColorStop(0.3, "#080c14");
+      bgGrad.addColorStop(0.7, "#060a12");
+      bgGrad.addColorStop(1, "#030406");
       ctx.fillStyle = bgGrad;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       const cols = Math.ceil(canvas.width / gap) + 1;
-      const rows = Math.ceil((canvas.height - startY) / gap) + 1;
-
-      const startRowIndex = Math.floor(startY / gap);
+      const rows = Math.ceil(canvas.height / gap) + 1;
 
       for (let i = 0; i < cols; i++) {
-        for (let j = startRowIndex; j < startRowIndex + rows; j++) {
+        for (let j = 0; j < rows; j++) {
           const x = i * gap;
           const y = j * gap;
-
-          if (y < startY) continue;
 
           const dx = mouse.x - x;
           const dy = mouse.y - y;
@@ -140,7 +137,7 @@ export default function DotBackground() {
         width: "100vw",
         height: "100vh",
         pointerEvents: "none",
-        zIndex: 0,
+        zIndex: -1,
       }}
     />
   );

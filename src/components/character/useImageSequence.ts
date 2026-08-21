@@ -1,13 +1,12 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { FrameLoader } from "./FrameLoader";
-import * as THREE from "three";
 
 export interface ImageSequenceState {
   loader: FrameLoader | null;
   loadProgress: number;
   loadedCount: number;
   isReady: boolean;
-  getTexture: (frame: number) => THREE.Texture | null;
+  getImage: (frame: number) => HTMLImageElement | null;
 }
 
 export function useImageSequence(): ImageSequenceState {
@@ -23,12 +22,12 @@ export function useImageSequence(): ImageSequenceState {
     const unsubscribe = loader.onProgress((progress, count) => {
       setLoadProgress(progress);
       setLoadedCount(count);
-      if (loader.isInitialBatchReady() || count >= 15) {
+      if (loader.isReady()) {
         setIsReady(true);
       }
     });
 
-    // Start preloading frames in progressive batches
+    // Start preloading frames
     loader.startPreload();
 
     return () => {
@@ -38,16 +37,17 @@ export function useImageSequence(): ImageSequenceState {
     };
   }, []);
 
-  const getTexture = (frame: number): THREE.Texture | null => {
+  const getImage = useCallback((frame: number): HTMLImageElement | null => {
     if (!loaderRef.current) return null;
-    return loaderRef.current.getTexture(frame);
-  };
+    return loaderRef.current.getImage(frame);
+  }, []);
 
   return {
     loader: loaderRef.current,
     loadProgress,
     loadedCount,
     isReady,
-    getTexture,
+    getImage,
   };
 }
+
