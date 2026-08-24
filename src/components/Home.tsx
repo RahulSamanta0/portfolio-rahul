@@ -73,9 +73,9 @@ export default function Home() {
               style={
                 mousePos
                   ? ({
-                      "--mouse-x": `${mousePos.x}px`,
-                      "--mouse-y": `${mousePos.y}px`,
-                    } as React.CSSProperties)
+                    "--mouse-x": `${mousePos.x}px`,
+                    "--mouse-y": `${mousePos.y}px`,
+                  } as React.CSSProperties)
                   : undefined
               }
             >
@@ -117,7 +117,7 @@ export default function Home() {
                 <i className="ri-mail-fill"></i>
               </a>
               <a
-                href="https://drive.google.com/file/d/1MZckwt8ifhJJqaErfH1lupx9SzunamYC/view?usp=sharing"
+                href="https://drive.google.com/file/d/16yUjAIX0mslK-YPZzzPdHxigSn64bWxy/view?usp=sharing"
                 className="animated-button hero-cv-btn"
                 target="_blank"
                 rel="noreferrer"
