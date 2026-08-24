@@ -117,7 +117,7 @@ export default function Home() {
                 <i className="ri-mail-fill"></i>
               </a>
               <a
-                href="/assets/img/RahulSamanta_n resume.pdf"
+                href="https://drive.google.com/file/d/1MZckwt8ifhJJqaErfH1lupx9SzunamYC/view?usp=sharing"
                 className="animated-button hero-cv-btn"
                 target="_blank"
                 rel="noreferrer"
